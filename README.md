@@ -1,5 +1,7 @@
 # can-ajax
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-ajax.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/canjs/can-ajax.png?branch=master)](https://travis-ci.org/canjs/can-ajax)
 
 jQuery-inspired AJAX request library.
