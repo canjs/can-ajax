@@ -1,10 +1,10 @@
-var ajax = require('can-util/dom/ajax/ajax');
+var ajax = require('./can-ajax');
+var makeMap = require('can-make-map');
 var namespace = require("can-namespace");
-var makeMap = require('can-util/js/make-map/make-map');
 
 QUnit = require('steal-qunit');
 
-QUnit.module("can-util/dom/ajax");
+QUnit.module("can-ajax");
 
 var makeFixture = function(XHR){
 
@@ -38,7 +38,7 @@ if (__dirname !== '/') {
 	QUnit.asyncTest("basic get request", function () {
 		ajax({
 			type: "get",
-			url: __dirname+"/test-result.json"
+			url: __dirname+"/can-ajax-test-result.json"
 		}).then(function(resp){
 			QUnit.equal(resp.message, "VALUE");
 			start();
@@ -54,7 +54,7 @@ if (__dirname !== '/') {
 	QUnit.asyncTest("GET requests with dataType parse JSON (#106)", function(){
 		ajax({
 			type: "get",
-			url: __dirname+"/test-result.txt",
+			url: __dirname+"/can-ajax-test-result.txt",
 			dataType: "json"
 		}).then(function(resp){
 			QUnit.equal(resp.message, "VALUE");
@@ -68,7 +68,7 @@ QUnit.asyncTest("ignores case of type parameter for a post request (#100)", func
 			CONTENT_TYPE: "Content-Type"
 		},
 		restore = makeFixture(function () {
-			this.open = function (type, url) {
+			this.open = function () {
 			};
 
 			this.send = function () {
@@ -117,7 +117,7 @@ if(typeof XDomainRequest === 'undefined') {
 			start();
 		});
 	});
-	
+
 	// Test simple GET CORS:
 	QUnit.asyncTest("GET CORS should be a simple request - without a preflight (#187)", function () {
 
@@ -126,7 +126,7 @@ if(typeof XDomainRequest === 'undefined') {
 		var isSimpleMethod = makePredicateContains("GET,POST,HEAD");
 		var isSimpleHeader = makePredicateContains("Accept,Accept-Language,Content-Language,Content-Type,DPR,Downlink,Save-Data,Viewport-Width,Width");
 		var isSimpleContentType = makePredicateContains("application/x-www-form-urlencoded,multipart/form-data,text/plain");
-		
+
 		restore = makeFixture(function () {
 			this.open = function (type, url) {
 				if (!isSimpleMethod(type)){
@@ -141,7 +141,7 @@ if(typeof XDomainRequest === 'undefined') {
 				this.status = 200;
 				this.onreadystatechange();
 			};
-		
+
 			this.setRequestHeader = function (header, value) {
 				if (header === "Content-Type" && !isSimpleHeader(value)){
 					isSimpleRequest = false;
@@ -152,7 +152,7 @@ if(typeof XDomainRequest === 'undefined') {
 				response[header] = value;
 			};
 		});
-		
+
 		ajax({
 			url: "http://query.yahooapis.com/v1/public/yql",
 			data: {
@@ -176,7 +176,7 @@ if(System.env !== 'canjs-test' && __dirname !== '/') {
 	QUnit.asyncTest("abort", function () {
 		var promise = ajax({
 			type: "get",
-			url: __dirname+"/test-result.json"
+			url: __dirname+"/can-ajax-test-result.json"
 		});
 		promise.catch(function(xhr) {
 			if(xhr instanceof Error) {
@@ -237,7 +237,7 @@ if (__dirname !== '/') {
 	QUnit.asyncTest("correctly serializes null and undefined values (#177)", function () {
 		ajax({
 			type: "get",
-			url: __dirname + "/test-result.txt",
+			url: __dirname + "/can-ajax-test-result.txt",
 			data: {
 				foo: null
 			}
