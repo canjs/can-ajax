@@ -1,56 +1,26 @@
 # can-ajax
 
+[![Join the chat at https://gitter.im/canjs/canjs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/canjs/canjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-ajax/blob/master/LICENSE)
+[![npm version](https://badge.fury.io/js/can-ajax.svg)](https://www.npmjs.com/package/can-ajax)
+[![Travis build status](https://travis-ci.org/canjs/can-ajax.svg?branch=master)](https://travis-ci.org/canjs/can-ajax)
 [![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-ajax.svg)](https://greenkeeper.io/)
-
-[![Build Status](https://travis-ci.org/canjs/can-ajax.png?branch=master)](https://travis-ci.org/canjs/can-ajax)
 
 jQuery-inspired AJAX request library.
 
-## Usage
+## Documentation
 
-### ES6 use
+Read the [can-ajax API docs on CanJS.com](https://canjs.com/doc/can-ajax.html).
 
-With StealJS, you can import this module directly in a template that is autorendered:
+## Changelog
 
-```js
-import plugin from 'can-ajax';
-```
+See the [latest releases on GitHub](https://github.com/canjs/can-ajax/releases).
 
-### CommonJS use
+## Contributing
 
-Use `require` to load `can-ajax` and everything else
-needed to create a template that uses `can-ajax`:
+The [contribution guide](https://github.com/canjs/can-ajax/blob/master/CONTRIBUTING.md) has information on getting help, reporting bugs, developing locally, and more.
 
-```js
-var plugin = require("can-ajax");
-```
+## License
 
-## AMD use
+[MIT](https://github.com/canjs/can-ajax/blob/master/LICENSE)
 
-Configure the `can` and `jquery` paths and the `can-ajax` package:
-
-```html
-<script src="require.js"></script>
-<script>
-	require.config({
-	    paths: {
-	        "jquery": "node_modules/jquery/dist/jquery",
-	        "can": "node_modules/canjs/dist/amd/can"
-	    },
-	    packages: [{
-		    	name: 'can-ajax',
-		    	location: 'node_modules/can-ajax/dist/amd',
-		    	main: 'lib/can-ajax'
-	    }]
-	});
-	require(["main-amd"], function(){});
-</script>
-```
-
-### Standalone use
-
-Load the `global` version of the plugin:
-
-```html
-<script src='./node_modules/can-ajax/dist/global/can-ajax.js'></script>
-```
