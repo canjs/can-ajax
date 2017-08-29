@@ -1,8 +1,15 @@
-var ajax = require('./can-ajax');
-var makeMap = require('can-make-map');
-var namespace = require("can-namespace");
+'use strict';
 
-QUnit = require('steal-qunit');
+var ajax = require('./can-ajax');
+var namespace = require("can-namespace");
+var makeMap = require('can-make-map');
+var GLOBAL = require("can-globals/global/global");
+var parseURI = require('can-parse-uri');
+
+var QUnit = require('./test/qunit');
+var helpers = require('./test/helpers');
+var isMainCanTest = typeof System === 'object' && System.env !== 'canjs-test';
+var hasLocalServer = !helpers.isServer() && !helpers.isProduction();
 
 QUnit.module("can-ajax");
 
@@ -32,43 +39,44 @@ var makePredicateContains = function (str){
 	};
 };
 
-
-
-if (__dirname !== '/') {
-	QUnit.asyncTest("basic get request", function () {
+if (hasLocalServer) {
+	QUnit.test('basic get request', function (assert) {
+		var done = assert.async();
 		ajax({
 			type: "get",
 			url: __dirname+"/can-ajax-test-result.json"
 		}).then(function(resp){
-			QUnit.equal(resp.message, "VALUE");
-			start();
+			assert.equal(resp.message, "VALUE");
+			done();
 		});
 	});
 }
 
-QUnit.test("added to namespace (#99)", function(){
-	QUnit.equal(namespace.ajax, ajax);
+QUnit.test("added to namespace (#99)", function (assert) {
+	assert.equal(namespace.ajax, ajax);
 });
 
-if (__dirname !== '/') {
-	QUnit.asyncTest("GET requests with dataType parse JSON (#106)", function(){
+if (hasLocalServer) {
+	QUnit.test("GET requests with dataType parse JSON (#106)", function (assert) {
+		var done = assert.async();
 		ajax({
 			type: "get",
 			url: __dirname+"/can-ajax-test-result.txt",
 			dataType: "json"
 		}).then(function(resp){
-			QUnit.equal(resp.message, "VALUE");
-			start();
+			assert.equal(resp.message, "VALUE");
+			done();
 		});
 	});
 }
 
-QUnit.asyncTest("ignores case of type parameter for a post request (#100)", function () {
+QUnit.test("ignores case of type parameter for a post request (#100)", function (assert) {
+	var done = assert.async();
 	var requestHeaders = {
 			CONTENT_TYPE: "Content-Type"
 		},
 		restore = makeFixture(function () {
-			this.open = function () {
+			this.open = function (type, url) {
 			};
 
 			this.send = function () {
@@ -95,31 +103,203 @@ QUnit.asyncTest("ignores case of type parameter for a post request (#100)", func
 			bar: "qux"
 		}
 	}).then(function (value) {
-		QUnit.equal(value[requestHeaders.CONTENT_TYPE], "application/x-www-form-urlencoded");
+		assert.equal(value[requestHeaders.CONTENT_TYPE], "application/x-www-form-urlencoded");
 	}, function (reason) {
-		QUnit.notOk(reason, "request failed with reason = ", reason);
+		assert.notOk(reason, "request failed with reason = ", reason);
 	}).then(function () {
 		// restore original values
 		restore();
-		start();
+		done();
+	});
+});
+
+QUnit.test("url encodes GET requests when no contentType", function(assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var o = {};
+		this.open = function (type, url) {
+			o.url = url;
+		};
+
+		this.send = function (data) {
+			o.data = data;
+			this.readyState = 4;
+			this.status = 200;
+			this.responseText = JSON.stringify(o);
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			if (header === "Content-Type") {
+				o[header] = value;
+			}
+		};
+	});
+
+	ajax({
+		type: "get",
+		url: "http://anotherdomain.com/foo",
+		data: { foo: "bar" }
+	}).then(function(value){
+		assert.equal(value["Content-Type"], "application/x-www-form-urlencoded");
+		assert.equal(value.data, undefined, "No data provided because it's a GET");
+		assert.equal(value.url, "http://anotherdomain.com/foo?foo=bar");
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	})
+	.then(function(){
+		restore();
+		done();
+	});
+});
+
+QUnit.test("Stringifies GET requests when contentType=application/json", function(assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var o = {};
+		this.open = function (type, url) {
+			o.url = url;
+		};
+
+		this.send = function (data) {
+			o.data = data;
+			this.readyState = 4;
+			this.status = 200;
+			this.responseText = JSON.stringify(o);
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			if (header === "Content-Type") {
+				o[header] = value;
+			}
+		};
+	});
+
+	ajax({
+		type: "get",
+		url: "http://anotherdomain.com/foo",
+		data: { foo: "bar" },
+		contentType: "application/json"
+	}).then(function(value){
+		assert.equal(value["Content-Type"], "application/json");
+		assert.equal(value.data, undefined, "No data provided because it's a GET");
+		assert.equal(value.url, 'http://anotherdomain.com/foo?{"foo":"bar"}');
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	})
+	.then(function(){
+		restore();
+		done();
+	});
+
+});
+
+QUnit.test("Stringifies POST requests when there is no contentType", function(assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var o = {};
+		this.open = function (type, url) {
+			o.url = url;
+		};
+
+		this.send = function (data) {
+			o.data = data;
+			this.readyState = 4;
+			this.status = 200;
+			this.responseText = JSON.stringify(o);
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			if (header === "Content-Type") {
+				o[header] = value;
+			}
+		};
+	});
+
+	var origin = parseURI(GLOBAL().location.href);
+	var url = origin.protocol + origin.authority + "/foo";
+
+	ajax({
+		type: "post",
+		url: url,
+		data: { foo: "bar" }
+	}).then(function(value){
+		assert.equal(value["Content-Type"], "application/json");
+		assert.equal(value.data, '{"foo":"bar"}', "Data was stringified");
+		assert.equal(value.url, url);
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	})
+	.then(function(){
+		restore();
+		done();
+	});
+});
+
+QUnit.test("url encodes POST requests when contentType=application/x-www-form-urlencoded", function (assert) {
+	var done = assert.async();
+	// test that contentType is application/blah
+	var restore = makeFixture(function () {
+		var o = {};
+		this.open = function (type, url) {
+			o.url = url;
+		};
+
+		this.send = function (data) {
+			o.data = data;
+			this.readyState = 4;
+			this.status = 200;
+			this.responseText = JSON.stringify(o);
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			if (header === "Content-Type") {
+				o[header] = value;
+			}
+		};
+	});
+
+	ajax({
+		type: "post",
+		url: "http://anotherdomain.com/foo",
+		data: { foo: "bar" },
+		contentType: "application/x-www-form-urlencoded"
+	}).then(function(value){
+		assert.equal(value["Content-Type"], "application/x-www-form-urlencoded");
+		assert.equal(value.data, 'foo=bar', "Data was url encoded");
+		assert.equal(value.url, 'http://anotherdomain.com/foo');
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	})
+	.then(function(){
+		restore();
+		done();
 	});
 });
 
 if(typeof XDomainRequest === 'undefined') {
-	QUnit.asyncTest("cross domain post request should change data to form data (#90)", function () {
-		ajax({
-			type: "POST",
-			url: "http://httpbin.org/post",
-			data: {'message': 'VALUE'},
-			dataType: 'application/json'
-		}).then(function(resp){
-			QUnit.equal(resp.form.message, "VALUE");
-			start();
+	if (!helpers.isServer()) {
+		// There are timing issues with mocha-qunit-ui
+		QUnit.test("cross domain post request should change data to form data (#90)", function (assert) {
+			var done = assert.async();
+			ajax({
+				type: "POST",
+				url: "http://httpbin.org/post",
+				data: {'message': 'VALUE'},
+				dataType: 'application/json'
+			}).then(function(resp){
+				assert.equal(resp.form.message, "VALUE");
+				done();
+			});
 		});
-	});
+	}
 
 	// Test simple GET CORS:
-	QUnit.asyncTest("GET CORS should be a simple request - without a preflight (#187)", function () {
+	QUnit.test("GET CORS should be a simple request - without a preflight (#187)", function (assert) {
+		var done = assert.async();
 
 		// CORS simple requests: https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
 		var isSimpleRequest = true, restore;
@@ -143,10 +323,10 @@ if(typeof XDomainRequest === 'undefined') {
 			};
 
 			this.setRequestHeader = function (header, value) {
-				if (header === "Content-Type" && !isSimpleHeader(value)){
+				if (header === "Content-Type" && !isSimpleContentType(value)){
 					isSimpleRequest = false;
 				}
-				if (isSimpleContentType(header)){
+				if (isSimpleRequest && !isSimpleHeader(header)){
 					isSimpleRequest = false;
 				}
 				response[header] = value;
@@ -160,20 +340,21 @@ if(typeof XDomainRequest === 'undefined') {
 				format: "json"
 			}
 		}).then(function(response){
-			QUnit.ok(isSimpleRequest, "CORS GET is simple");
+			assert.ok(isSimpleRequest, "CORS GET is simple");
 			restore();
-			start();
+			done();
 		}, function(err){
-			QUnit.ok(false, "Should be resolved");
+			assert.ok(false, "Should be resolved");
 			restore();
-			start();
+			done();
 		});
 	});
 }
 
-if(System.env !== 'canjs-test' && __dirname !== '/') {
+if(isMainCanTest && hasLocalServer) {
 	// Brittle in IE 9
-	QUnit.asyncTest("abort", function () {
+	QUnit.test("abort", function (assert) {
+		var done = assert.async();
 		var promise = ajax({
 			type: "get",
 			url: __dirname+"/can-ajax-test-result.json"
@@ -181,12 +362,12 @@ if(System.env !== 'canjs-test' && __dirname !== '/') {
 		promise.catch(function(xhr) {
 			if(xhr instanceof Error) {
 				// IE9 - see http://stackoverflow.com/questions/7287706/ie-9-javascript-error-c00c023f
-				QUnit.equal(xhr.message, 'Could not complete the operation due to error c00c023f.');
-				start();
+				assert.equal(xhr.message, 'Could not complete the operation due to error c00c023f.');
+				done();
 			} else {
 				setTimeout(function() {
-					QUnit.equal(xhr.readyState, 0, "aborts the promise");
-					start();
+					assert.equal(xhr.readyState, 0, "aborts the promise");
+					done();
 				}, 50);
 			}
 		});
@@ -194,8 +375,8 @@ if(System.env !== 'canjs-test' && __dirname !== '/') {
 	});
 }
 
-
-QUnit.asyncTest("crossDomain is true for relative requests", function(){
+QUnit.test("crossDomain is true for relative requests", function (assert) {
+	var done = assert.async();
 	var headers = {},
 		restore = makeFixture(function () {
 			this.open = function (type, url) {
@@ -221,20 +402,21 @@ QUnit.asyncTest("crossDomain is true for relative requests", function(){
 		},
 		dataType: "json"
 	}).then(function (value) {
-		QUnit.deepEqual(headers, {
+		assert.deepEqual(headers, {
 			"Content-Type": "application/json",
 			"X-Requested-With": "XMLHttpRequest"});
 	}, function (reason) {
-		QUnit.notOk(reason, "request failed with reason = ", reason);
+		assert.notOk(reason, "request failed with reason = ", reason);
 	}).then(function () {
 		// restore original values
 		restore();
-		start();
+		done();
 	});
 });
 
-if (__dirname !== '/') {
-	QUnit.asyncTest("correctly serializes null and undefined values (#177)", function () {
+if (hasLocalServer) {
+	QUnit.test("correctly serializes null and undefined values (#177)", function (assert) {
+		var done = assert.async();
 		ajax({
 			type: "get",
 			url: __dirname + "/can-ajax-test-result.txt",
@@ -242,8 +424,8 @@ if (__dirname !== '/') {
 				foo: null
 			}
 		}).then(function (resp) {
-			QUnit.equal(resp.message, "VALUE");
-			start();
+			assert.equal(resp.message, "VALUE");
+			done();
 		});
 	});
 }
