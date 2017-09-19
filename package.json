@@ -46,11 +46,11 @@
     ]
   },
   "dependencies": {
-    "can-assign": "^1.0.0",
     "can-globals": "0.1.0",
     "can-namespace": "^1.0.0",
     "can-param": "^1.0.1",
-    "can-parse-uri": "^1.0.0"
+    "can-parse-uri": "^1.0.0",
+    "can-util": "^3.10.8"
   },
   "devDependencies": {
     "can-make-map": "^1.0.0",

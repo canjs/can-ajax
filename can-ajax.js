@@ -1,7 +1,7 @@
 'use strict';
 
 var Global = require("can-globals/global/global");
-var assign = require("can-assign");
+var deepAssign = require("can-util/js/deep-assign/deep-assign");
 var namespace = require("can-namespace");
 var parseURI = require('can-parse-uri');
 var param = require("can-param");
@@ -52,6 +52,8 @@ var xhrs = [
 // used to check for Cross Domain requests
 var originUrl = parseURI(Global().location.href);
 
+var globalSettings = {};
+
 var makeXhr = function () {
 	if (_xhrf != null) {
 		return _xhrf();
@@ -92,7 +94,7 @@ var _xhrResp = function (xhr, options) {
 	}
 };
 
-module.exports = namespace.ajax = function (o) {
+function ajax(o) {
 	var xhr = makeXhr(), timer, n = 0;
 	var deferred = {};
 	var promise = new Promise(function(resolve,reject){
@@ -105,13 +107,13 @@ module.exports = namespace.ajax = function (o) {
 		xhr.abort();
 	};
 
-	o = assign({
+	o = deepAssign({
 		userAgent: "XMLHttpRequest",
 		lang: "en",
 		type: "GET",
 		data: null,
 		dataType: "json"
-	}, o);
+	}, globalSettings, o);
 
 	// Set the default contentType
 	if(!o.contentType) {
@@ -179,7 +181,7 @@ module.exports = namespace.ajax = function (o) {
 
 	// For CORS to send a "simple" request (to avoid a preflight check), the following methods are allowed: GET/POST/HEAD,
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
-	
+
 	var isSimpleCors = o.crossDomain && ['GET', 'POST', 'HEAD'].indexOf(type) !== -1;
 
 	if (isPost) {
@@ -200,6 +202,17 @@ module.exports = namespace.ajax = function (o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
+    if (o.xhrFields) {
+        for (var f in o.xhrFields) {
+            xhr[f] = o.xhrFields[f];
+        }
+    }
+
 	xhr.send(data);
 	return promise;
 };
+
+module.exports = namespace.ajax = ajax
+module.exports.ajaxSetup = function (o) {
+    globalSettings = o || {};
+}
