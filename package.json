@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "can-assign": "^1.0.0",
-    "can-globals": "0.2.2",
+    "can-globals": "^0.2.2",
     "can-namespace": "^1.0.0",
     "can-param": "^1.0.1",
     "can-parse-uri": "^1.0.0"
