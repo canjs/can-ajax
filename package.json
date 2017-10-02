@@ -1,6 +1,6 @@
 {
   "name": "can-ajax",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "jQuery-inspired AJAX request library.",
   "homepage": "",
   "repository": {
