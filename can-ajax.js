@@ -210,9 +210,9 @@ function ajax(o) {
 
 	xhr.send(data);
 	return promise;
-};
+}
 
-module.exports = namespace.ajax = ajax
+module.exports = namespace.ajax = ajax;
 module.exports.ajaxSetup = function (o) {
     globalSettings = o || {};
-}
+};
