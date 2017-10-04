@@ -17,13 +17,14 @@
     "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
     "postpublish": "git push --tags && git checkout master && git branch -D release && git push",
     "testee": "testee test.html --browsers firefox",
-    "test": "npm run jshint && npm run testee",
+    "test": "npm run detect-cycle && npm run jshint && npm run testee",
     "jshint": "jshint ./*.js --config",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
     "build": "node build.js",
-    "develop": "done-serve --static --develop --port 8080"
+    "develop": "done-serve --static --develop --port 8080",
+    "detect-cycle": "detect-cyclic-packages --ignore done-serve"
   },
   "main": "dist/cjs/can-ajax",
   "keywords": [
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "can-make-map": "^1.0.0",
+    "detect-cyclic-packages": "^1.1.0",
     "done-serve": "^1.0.0",
     "donejs-cli": "^1.0.0",
     "generator-donejs": "^1.0.0",
