@@ -1,7 +1,7 @@
 'use strict';
 
 var Global = require("can-globals/global/global");
-var deepAssign = require("can-util/js/deep-assign/deep-assign");
+var canReflect = require("can-reflect");
 var namespace = require("can-namespace");
 var parseURI = require('can-parse-uri');
 var param = require("can-param");
@@ -129,7 +129,7 @@ function ajax(o) {
 		xhr.abort();
 	};
 
-	o = deepAssign({
+	o = canReflect.assignDeep({
 		userAgent: "XMLHttpRequest",
 		lang: "en",
 		type: "GET",
