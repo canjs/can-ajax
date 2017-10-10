@@ -36,14 +36,14 @@ var param = require("can-param");
  *      - __data__ `{Object}` The data of the request. If data needs to be urlencoded (e.g. for GET requests or for CORS) it is serialized with [can-param].
  *      - __dataType__ `{String}` Type of data. _Default is `json`_.
  *      - __crossDomain__ `{Boolean}` If you wish to force a crossDomain request (such as JSONP) on the same domain, set the value of crossDomain to true. This allows, for example, server-side redirection to another domain. Default: `false` for same-domain requests, `true` for cross-domain requests.
- *	- __xhrFields__ `{Object}` Any fields to be set directly on the xhr request, [https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest] such as the withCredentials attribute that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers.
- *	
+ *      - __xhrFields__ `{Object}` Any fields to be set directly on the xhr request, [https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest] such as the withCredentials attribute that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers.
+ *
  *    @return {Promise} A Promise that resolves to the data. The Promise instance is abortable and exposes an `abort` method. Invoking abort on the Promise instance indirectly rejects it.
  *
  *
  * @signature `ajaxSetup( ajaxOptions )`
  *
- *    Is used to persist ajaxOptions across all ajax requests and they can be over-written in the ajaxOptions of the actual request. 
+ *    Is used to persist ajaxOptions across all ajax requests and they can be over-written in the ajaxOptions of the actual request.
  *    [https://api.jquery.com/jquery.ajaxsetup/]
  *
  *    ```
@@ -129,13 +129,15 @@ function ajax(o) {
 		xhr.abort();
 	};
 
-	o = canReflect.assignDeep({
-		userAgent: "XMLHttpRequest",
-		lang: "en",
-		type: "GET",
-		data: null,
-		dataType: "json"
-	}, globalSettings, o);
+	o = [{
+			userAgent: "XMLHttpRequest",
+			lang: "en",
+			type: "GET",
+			data: null,
+			dataType: "json"
+	}, globalSettings, o].reduce(function(a,b,i) {
+		return canReflect.assignDeep(a,b);
+	});
 
 	// Set the default contentType
 	if(!o.contentType) {
