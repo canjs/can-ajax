@@ -8,7 +8,8 @@ var param = require("can-param");
 
 /**
  * @module {function} can-ajax can-ajax
- * @parent can-infrastructure
+ * @parent can-js-utilities
+ * @collection can-infrastructure
  *
  * Make an asynchronous HTTP (AJAX) request.
  *
