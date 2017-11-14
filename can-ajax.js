@@ -111,7 +111,7 @@ var _xhrResp = function (xhr, options) {
 		case "application/javascript":
 		case "application/x-javascript":
 		case "json":
-			return JSON.parse(xhr.responseText);
+			return xhr.responseText && JSON.parse(xhr.responseText);
 		default:
 			return xhr.responseText;
 	}
