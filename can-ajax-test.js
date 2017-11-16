@@ -414,6 +414,44 @@ QUnit.test("crossDomain is true for relative requests", function (assert) {
 	});
 });
 
+QUnit.test("handles 204 No Content responses when expecting JSON", function (assert) {
+	var done = assert.async();
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url) {};
+
+			this.send = function () {
+				this.readyState = 4;
+				this.status = 204;
+				this.responseText = '';
+				this.onreadystatechange();
+			};
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+		});
+
+	ajax({
+		type: "delete",
+		url: "/foo",
+		data: {
+			id: "qux"
+		},
+		dataType: "json"
+	}).then(function () {
+		assert.deepEqual(headers, {
+			"Content-Type": "application/json",
+			"X-Requested-With": "XMLHttpRequest"});
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	}).then(function () {
+		// restore original values
+		restore();
+		done();
+	});
+});
+
 if (hasLocalServer) {
 	QUnit.test("correctly serializes null and undefined values (#177)", function (assert) {
 		var done = assert.async();
