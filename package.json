@@ -56,7 +56,7 @@
   "devDependencies": {
     "can-make-map": "^1.0.0",
     "detect-cyclic-packages": "^1.1.0",
-    "done-serve": "^1.0.0",
+    "done-serve": "^2.0.0",
     "donejs-cli": "^1.0.0",
     "generator-donejs": "^1.0.0",
     "jshint": "^2.9.1",
