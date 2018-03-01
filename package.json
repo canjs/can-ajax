@@ -12,6 +12,7 @@
     "email": "contact@bitovi.com",
     "url": "https://www.bitovi.com/"
   },
+	license: "MIT",
   "scripts": {
     "preversion": "npm test && npm run build",
     "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
