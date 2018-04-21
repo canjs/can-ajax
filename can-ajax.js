@@ -38,6 +38,7 @@ var param = require("can-param");
  *      - __dataType__ `{String}` Type of data. _Default is `json`_.
  *      - __crossDomain__ `{Boolean}` If you wish to force a crossDomain request (such as JSONP) on the same domain, set the value of crossDomain to true. This allows, for example, server-side redirection to another domain. Default: `false` for same-domain requests, `true` for cross-domain requests.
  *      - __xhrFields__ `{Object}` Any fields to be set directly on the xhr request, [https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest] such as the withCredentials attribute that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers.
+ *      - __headers__ `{Object}` Request headers.
  *
  *    @return {Promise} A Promise that resolves to the data. The Promise instance is abortable and exposes an `abort` method. Invoking abort on the Promise instance indirectly rejects it.
  *
@@ -227,11 +228,17 @@ function ajax(o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
-        if (o.xhrFields) {
-            for (var f in o.xhrFields) {
-                xhr[f] = o.xhrFields[f];
-            }
-        }
+	if (o.headers) {
+		for (var k in o.headers) {
+			xhr.setRequestHeader(k, o.headers[k]);
+		}
+	}
+
+	if (o.xhrFields) {
+		for (var f in o.xhrFields) {
+			xhr[f] = o.xhrFields[f];
+		}
+	}
 
 	xhr.send(data);
 	return promise;
@@ -239,5 +246,5 @@ function ajax(o) {
 
 module.exports = namespace.ajax = ajax;
 module.exports.ajaxSetup = function (o) {
-    globalSettings = o || {};
+	globalSettings = o || {};
 };
