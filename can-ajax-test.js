@@ -467,3 +467,50 @@ if (hasLocalServer) {
 		});
 	});
 }
+
+
+QUnit.test("It doesn't stringify FormData", function(assert) {
+	var done = assert.async();
+	var headers = {};
+	var formData = new FormData();
+	formData.append('foo', 'bar');
+
+	var restore = makeFixture(function () {
+		var o = {};
+		this.open = function (type, url) {
+			o.url = url;
+		};
+
+		this.send = function (data) {
+			o.data = data;
+			this.readyState = 4;
+			this.status = 200;
+			this.responseText = JSON.stringify(o);
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			if (header === "Content-Type") {
+				o[header] = value;
+			}
+		};
+	});
+
+	var origin = parseURI(GLOBAL().location.href);
+	var url = origin.protocol + origin.authority + "/foo";
+
+	ajax({
+		type: "post",
+		url: url,
+		data: formData
+	}).then(function(value){
+		assert.equal(value["Content-Type"], "application/json");
+		assert.equal(value.url, url);
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	})
+	.then(function(){
+		restore();
+		done();
+	});
+});
