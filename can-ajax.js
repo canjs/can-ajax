@@ -186,7 +186,7 @@ function ajax(o) {
 				if (xhr.status >= 200 && xhr.status < 300) {
 					deferred.resolve( _xhrResp(xhr, o) );
 				} else {
-					deferred.reject( xhr );
+					deferred.reject( _xhrResp(xhr, o) );
 				}
 			}
 			else if (o.progress) {
