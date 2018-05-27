@@ -227,11 +227,15 @@ function ajax(o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
-        if (o.xhrFields) {
-            for (var f in o.xhrFields) {
-                xhr[f] = o.xhrFields[f];
-            }
-        }
+	if(o.beforeSend){
+		o.beforeSend.call( null, xhr, o );
+	}
+
+	if (o.xhrFields) {
+		for (var f in o.xhrFields) {
+			xhr[f] = o.xhrFields[f];
+		}
+	}
 
 	xhr.send(data);
 	return promise;
