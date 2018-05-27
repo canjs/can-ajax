@@ -38,6 +38,7 @@ var param = require("can-param");
  *      - __dataType__ `{String}` Type of data. _Default is `json`_.
  *      - __crossDomain__ `{Boolean}` If you wish to force a crossDomain request (such as JSONP) on the same domain, set the value of crossDomain to true. This allows, for example, server-side redirection to another domain. Default: `false` for same-domain requests, `true` for cross-domain requests.
  *      - __xhrFields__ `{Object}` Any fields to be set directly on the xhr request, [https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest] such as the withCredentials attribute that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers.
+ *      - __beforeSend__ `{callback}` A pre-request callback function that can be used to modify the XHR object before it is sent. Use this to set custom headers, etc. The XHR and settings objects are passed as arguments.
  *
  *    @return {Promise} A Promise that resolves to the data. The Promise instance is abortable and exposes an `abort` method. Invoking abort on the Promise instance indirectly rejects it.
  *
