@@ -105,7 +105,7 @@ var _xhrResp = function (xhr, options) {
 	
 	if(type && (xhr.responseText || xhr.responseXML)){
 		
-		switch (options.dataType || responseHeader.split(";")[0]) {
+		switch (type) {
 			case "text/xml":
 			case "xml":
 				return xhr.responseXML;
