@@ -119,7 +119,7 @@ var _xhrResp = function (xhr, options) {
 
 function ajax(o) {
 	var xhr = makeXhr(), timer, n = 0;
-	var deferred = {};
+	var deferred = {}, isFormData;
 	var promise = new Promise(function(resolve,reject){
 		deferred.resolve = resolve;
 		deferred.reject = reject;
@@ -208,13 +208,18 @@ function ajax(o) {
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
 
 	var isSimpleCors = o.crossDomain && ['GET', 'POST', 'HEAD'].indexOf(type) !== -1;
+	isFormData = o.data instanceof FormData;
 
 	if (isPost) {
-		data = (isJsonContentType && !isSimpleCors) ?
-			(typeof o.data === "object" ? JSON.stringify(o.data) : o.data):
-			param(o.data);
-
-		// CORS simple: `Content-Type` has to be `application/x-www-form-urlencoded`:
+		if (isFormData) {
+			// don't stringify FormData XHR handles it natively
+			data = o.data;
+		} else {
+			data = (isJsonContentType && !isSimpleCors) ?
+				(typeof o.data === "object" ? JSON.stringify(o.data) : o.data):
+				param(o.data);
+		}
+			// CORS simple: `Content-Type` has to be `application/x-www-form-urlencoded`:
 		var setContentType = (isJsonContentType && !isSimpleCors) ?
 			"application/json" : "application/x-www-form-urlencoded";
 		xhr.setRequestHeader("Content-Type", setContentType);
