@@ -64,6 +64,6 @@
     "steal": "^1.5.10",
     "steal-qunit": "^1.0.1",
     "steal-tools": "^1.2.0",
-    "testee": "^0.7.0"
+    "testee": "^0.8.0"
   }
 }
