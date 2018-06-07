@@ -208,7 +208,7 @@ function ajax(o) {
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
 
 	var isSimpleCors = o.crossDomain && ['GET', 'POST', 'HEAD'].indexOf(type) !== -1;
-	isFormData = o.data instanceof FormData;
+	isFormData = typeof FormData !== "undefined" && o.data instanceof FormData;
 
 	if (isPost) {
 		if (isFormData) {
