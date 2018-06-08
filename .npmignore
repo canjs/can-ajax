@@ -1,3 +1,7 @@
 !dist/
 /test/
 /.idea/
+/can-ajax-test.js
+/can-ajax-test-result.json
+/can-ajax-test-result.txt
+/test.html
