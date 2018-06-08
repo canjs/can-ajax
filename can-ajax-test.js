@@ -287,7 +287,7 @@ if(typeof XDomainRequest === 'undefined') {
 			var done = assert.async();
 			ajax({
 				type: "POST",
-				url: "http://httpbin.org/post",
+				url: "https://httpbin.org/post",
 				data: {'message': 'VALUE'},
 				dataType: 'application/json'
 			}).then(function(resp){
