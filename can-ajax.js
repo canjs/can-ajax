@@ -101,19 +101,26 @@ var contentTypes = {
 };
 
 var _xhrResp = function (xhr, options) {
-	switch (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]) {
-		case "text/xml":
-		case "xml":
-			return xhr.responseXML;
-		case "text/json":
-		case "application/json":
-		case "text/javascript":
-		case "application/javascript":
-		case "application/x-javascript":
-		case "json":
-			return xhr.responseText && JSON.parse(xhr.responseText);
-		default:
-			return xhr.responseText;
+	var type = (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]);
+	
+	if(type && (xhr.responseText || xhr.responseXML)){
+		
+		switch (type) {
+			case "text/xml":
+			case "xml":
+				return xhr.responseXML;
+			case "text/json":
+			case "application/json":
+			case "text/javascript":
+			case "application/javascript":
+			case "application/x-javascript":
+			case "json":
+				return xhr.responseText && JSON.parse(xhr.responseText);
+			default:
+				return xhr.responseText;
+		}
+	} else {
+		return xhr;
 	}
 };
 
@@ -186,7 +193,7 @@ function ajax(o) {
 				if (xhr.status >= 200 && xhr.status < 300) {
 					deferred.resolve( _xhrResp(xhr, o) );
 				} else {
-					deferred.reject( xhr );
+					deferred.reject( _xhrResp(xhr, o) );
 				}
 			}
 			else if (o.progress) {
@@ -232,11 +239,11 @@ function ajax(o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
-        if (o.xhrFields) {
-            for (var f in o.xhrFields) {
-                xhr[f] = o.xhrFields[f];
-            }
-        }
+	if (o.xhrFields) {
+		for (var f in o.xhrFields) {
+			xhr[f] = o.xhrFields[f];
+		}
+	}
 
 	xhr.send(data);
 	return promise;
