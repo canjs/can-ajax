@@ -52,7 +52,7 @@
     "can-namespace": "^1.0.0",
     "can-param": "^1.0.1",
     "can-parse-uri": "^1.0.0",
-    "can-reflect": "^1.4.5"
+    "can-reflect": "^1.16.3"
   },
   "devDependencies": {
     "can-make-map": "^1.0.0",
@@ -61,9 +61,9 @@
     "donejs-cli": "^1.0.0",
     "generator-donejs": "^1.0.0",
     "jshint": "^2.9.1",
-    "steal": "^1.5.10",
+    "steal": "^1.11.8",
     "steal-qunit": "^1.0.1",
-    "steal-tools": "^1.2.0",
-    "testee": "^0.7.0"
+    "steal-tools": "^1.11.9",
+    "testee": "^0.8.0"
   }
 }
