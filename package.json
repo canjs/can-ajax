@@ -24,7 +24,6 @@
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
     "build": "node build.js",
-    "develop": "done-serve --static --develop --port 8080",
     "detect-cycle": "detect-cyclic-packages --ignore done-serve"
   },
   "main": "dist/cjs/can-ajax",
@@ -37,13 +36,8 @@
   ],
   "steal": {
     "main": "can-ajax",
-    "configDependencies": [
-      "live-reload"
-    ],
     "npmIgnore": [
       "testee",
-      "generator-donejs",
-      "donejs-cli",
       "steal-tools"
     ]
   },
@@ -52,18 +46,15 @@
     "can-namespace": "^1.0.0",
     "can-param": "^1.0.1",
     "can-parse-uri": "^1.0.0",
-    "can-reflect": "^1.4.5"
+    "can-reflect": "^1.16.3"
   },
   "devDependencies": {
     "can-make-map": "^1.0.0",
     "detect-cyclic-packages": "^1.1.0",
-    "done-serve": "^1.0.0",
-    "donejs-cli": "^1.0.0",
-    "generator-donejs": "^1.0.0",
     "jshint": "^2.9.1",
-    "steal": "^1.5.10",
+    "steal": "^1.11.8",
     "steal-qunit": "^1.0.1",
-    "steal-tools": "^1.2.0",
-    "testee": "^0.7.0"
+    "steal-tools": "^1.11.9",
+    "testee": "^0.8.0"
   }
 }
