@@ -514,3 +514,42 @@ QUnit.test("It doesn't stringify FormData", function(assert) {
 		done();
 	});
 });
+
+QUnit.test("beforsend", function (assert) {
+	var done = assert.async();
+	var headers = {},
+	    restore = makeFixture(function () {
+		    this.open = function (type, url) {};
+
+		    this.send = function () {
+			    this.readyState = 4;
+			    this.status = 204;
+			    this.responseText = '';
+			    this.onreadystatechange();
+		    };
+
+		    this.setRequestHeader = function (header, value) {
+			    headers[header] = value;
+		    };
+	    });
+
+	ajax({
+		type: "post",
+		url: "/foo",
+		data: {
+			id: "qux"
+		},
+		dataType: "json",
+		beforeSend: function (xhr){
+			xhr.setRequestHeader("Authorization", "Bearer 123");
+		}
+	}).then(function (value) {
+		assert.ok(headers.hasOwnProperty('Authorization'), "custom header set");
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	}).then(function () {
+		// restore original values
+		restore();
+		done();
+	});
+});

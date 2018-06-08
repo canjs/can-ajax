@@ -29,3 +29,5 @@ node_modules
 
 docs/
 dist/
+/.idea/
+/package-lock.json
