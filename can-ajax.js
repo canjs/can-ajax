@@ -229,7 +229,7 @@ function ajax(o) {
 	}
 
 	if(o.beforeSend){
-		o.beforeSend.call( null, xhr, o );
+		o.beforeSend.call( o, xhr, o );
 	}
 
 	if (o.xhrFields) {
