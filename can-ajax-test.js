@@ -50,6 +50,29 @@ if (hasLocalServer) {
 			done();
 		});
 	});
+
+	QUnit.test('get textStatus', function (assert) {
+		var done = assert.async();
+		ajax({
+			type: "get",
+			url: __dirname+"/can-ajax-test-result.json"
+		}).then(function([resp, textStatus, xhr]){
+			assert.equal(textStatus, "OK");
+			done();
+		});
+	});
+
+	QUnit.test('get xhr object', function (assert) {
+		var done = assert.async();
+		ajax({
+			type: "get",
+			url: __dirname+"/can-ajax-test-result.json"
+		}).then(function([resp, textStatus, xhr]){
+			assert.equal(xhr.status, "200");
+			assert.equal(xhr.statusText, "OK");
+			done();
+		});
+	});
 }
 
 QUnit.test("added to namespace (#99)", function (assert) {

@@ -181,20 +181,20 @@ function ajax(o) {
 				}
 				if (xhr.status < 300) {
 					if (o.success) {
-						o.success( _xhrResp(xhr, o) );
+						o.success(_xhrResp(xhr, o), xhr.statusText, xhr);
 					}
 				}
 				else if (o.error) {
-					o.error(xhr, xhr.status, xhr.statusText);
+					o.error(_xhrResp(xhr, o), xhr.statusText, xhr);
 				}
 				if (o.complete) {
-					o.complete(xhr, xhr.statusText);
+					o.complete(_xhrResp(xhr, o), xhr.statusText, xhr);
 				}
 
 				if (xhr.status >= 200 && xhr.status < 300) {
-					deferred.resolve( _xhrResp(xhr, o) );
+					deferred.resolve([_xhrResp(xhr, o), xhr.statusText, xhr]);
 				} else {
-					deferred.reject( _xhrResp(xhr, o) );
+					deferred.reject([_xhrResp(xhr, o), xhr.statusText, xhr]);
 				}
 			}
 			else if (o.progress) {
