@@ -2,7 +2,7 @@
   "name": "can-ajax",
   "version": "2.0.0",
   "description": "jQuery-inspired AJAX request library.",
-  "homepage": "",
+  "homepage": "https://canjs.com/doc/can-ajax.html",
   "repository": {
     "type": "git",
     "url": "git://github.com/canjs/can-ajax.git"
@@ -16,7 +16,7 @@
   "scripts": {
     "preversion": "npm test && npm run build",
     "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
-    "postpublish": "git push --tags && git checkout master && git branch -D release && git push",
+    "postpublish": "git push --tags && git checkout - && git branch -D release && git push",
     "testee": "testee test.html --browsers firefox",
     "test": "npm run detect-cycle && npm run jshint && npm run testee",
     "jshint": "jshint ./*.js --config",
@@ -24,7 +24,7 @@
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
     "build": "node build.js",
-    "detect-cycle": "detect-cyclic-packages --ignore done-serve"
+    "detect-cycle": "detect-cyclic-packages"
   },
   "main": "dist/cjs/can-ajax",
   "keywords": [
