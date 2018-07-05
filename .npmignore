@@ -2,10 +2,8 @@
 test.html
 can-ajax-test-result.json
 can-ajax-test-result.txt
-can-ajax-test.js
 build.js
 .travis.yml
 .jshintrc
 .editorconfig
 /.idea/
-/test/
