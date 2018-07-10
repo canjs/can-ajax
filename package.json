@@ -49,7 +49,7 @@
     "can-reflect": "^1.16.3"
   },
   "devDependencies": {
-    "can-make-map": "^1.0.0",
+    "can-make-map": "1.0.1",
     "detect-cyclic-packages": "^1.1.0",
     "jshint": "^2.9.1",
     "steal": "^1.11.8",
