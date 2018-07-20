@@ -46,7 +46,7 @@
     "can-namespace": "^1.0.0",
     "can-param": "^1.0.1",
     "can-parse-uri": "^1.0.0",
-    "can-reflect": "^1.16.3"
+    "can-reflect": "^1.17.1"
   },
   "devDependencies": {
     "can-make-map": "^1.0.0",
