@@ -452,6 +452,42 @@ QUnit.test("handles 204 No Content responses when expecting JSON", function (ass
 	});
 });
 
+QUnit.test("handles responseText containing text when expecting JSON (#46)", function (assert) {
+	var done = assert.async();
+	var NOT_FOUND_CODE = 404;
+	var NOT_FOUND_MSG = "NOT FOUND";
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url) {};
+
+			this.send = function () {
+				this.readyState = 4;
+				this.status = NOT_FOUND_CODE;
+				this.responseText = NOT_FOUND_MSG;
+				this.onreadystatechange();
+			};
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+		});
+
+	ajax({
+		type: "get",
+		url: "/foo",
+		dataType: "json"
+	}).then(function (value) {
+		assert.notOk(value, "success callback call not expected");
+	}, function (xhr) {
+		assert.equal(xhr.status, 404);
+		assert.equal(xhr.responseText, NOT_FOUND_MSG);
+	}).then(function () {
+		// restore original values
+		restore();
+		done();
+	});
+});
+
 if (hasLocalServer) {
 	QUnit.test("correctly serializes null and undefined values (#177)", function (assert) {
 		var done = assert.async();
