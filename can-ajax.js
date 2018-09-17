@@ -102,25 +102,29 @@ var contentTypes = {
 };
 
 var _xhrResp = function (xhr, options) {
-	var type = (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]);
-	
-	if(type && (xhr.responseText || xhr.responseXML)){
+	try{
+		var type = (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]);
 		
-		switch (type) {
-			case "text/xml":
-			case "xml":
-				return xhr.responseXML;
-			case "text/json":
-			case "application/json":
-			case "text/javascript":
-			case "application/javascript":
-			case "application/x-javascript":
-			case "json":
-				return xhr.responseText && JSON.parse(xhr.responseText);
-			default:
-				return xhr.responseText;
+		if(type && (xhr.responseText || xhr.responseXML)){
+			
+			switch (type) {
+				case "text/xml":
+				case "xml":
+					return xhr.responseXML;
+				case "text/json":
+				case "application/json":
+				case "text/javascript":
+				case "application/javascript":
+				case "application/x-javascript":
+				case "json":
+					return xhr.responseText && JSON.parse(xhr.responseText);
+				default:
+					return xhr.responseText;
+			}
+		} else {
+			return xhr;
 		}
-	} else {
+	} catch(e){
 		return xhr;
 	}
 };
