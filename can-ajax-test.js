@@ -281,21 +281,39 @@ QUnit.test("url encodes POST requests when contentType=application/x-www-form-ur
 });
 
 if(typeof XDomainRequest === 'undefined') {
-	if (!helpers.isServer()) {
-		// There are timing issues with mocha-qunit-ui
-		QUnit.test("cross domain post request should change data to form data (#90)", function (assert) {
-			var done = assert.async();
-			ajax({
-				type: "POST",
-				url: "https://httpbin.org/post",
-				data: {'message': 'VALUE'},
-				dataType: 'application/json'
-			}).then(function(resp){
-				assert.equal(resp.form.message, "VALUE");
-				done();
-			});
+
+	QUnit.test("cross domain post request should change data to form data (#90)", function (assert) {
+		var done = assert.async();
+		var headers = {},
+		    restore = makeFixture(function () {
+			    this.open = function (type, url) {};
+
+			    this.send = function () {
+				    this.readyState = 4;
+				    this.status = 204;
+				    this.responseText = '';
+				    this.onreadystatechange();
+			    };
+
+			    this.setRequestHeader = function (header, value) {
+				    headers[header] = value;
+			    };
+		    });
+		ajax({
+			type: "POST",
+			url: "https://httpbin.org/post",
+			data: {'message': 'VALUE'},
+			dataType: 'application/json'
+		}).then(function(resp){
+			QUnit.deepEqual(headers, {"Content-Type": "application/x-www-form-urlencoded"})
+
+			restore();
+			done();
 		});
-	}
+
+
+	});
+
 
 	// Test simple GET CORS:
 	QUnit.test("GET CORS should be a simple request - without a preflight (#187)", function (assert) {
