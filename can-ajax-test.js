@@ -305,7 +305,7 @@ if(typeof XDomainRequest === 'undefined') {
 			data: {'message': 'VALUE'},
 			dataType: 'application/json'
 		}).then(function(resp){
-			QUnit.deepEqual(headers, {"Content-Type": "application/x-www-form-urlencoded"})
+			QUnit.deepEqual(headers, {"Content-Type": "application/x-www-form-urlencoded"});
 
 			restore();
 			done();
