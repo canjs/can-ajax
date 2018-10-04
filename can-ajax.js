@@ -73,8 +73,6 @@ var xhrs = [
 		function () { return new ActiveXObject("MSXML2.XMLHTTP"); }
 	],
 	_xhrf = null;
-// used to check for Cross Domain requests
-var originUrl = parseURI(Global().location.href);
 
 var globalSettings = {};
 
@@ -161,6 +159,8 @@ function ajax(o) {
 	//how jquery handles check for cross domain
 	if(o.crossDomain == null){
 		try {
+			// used to check for Cross Domain requests
+			var originUrl = parseURI(Global().location.href);
 			requestUrl = parseURI(o.url);
 			o.crossDomain = !!((requestUrl.protocol && requestUrl.protocol !== originUrl.protocol) ||
 				(requestUrl.host && requestUrl.host !== originUrl.host));
