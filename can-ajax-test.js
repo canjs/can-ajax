@@ -569,7 +569,7 @@ QUnit.test("It doesn't stringify FormData", function(assert) {
 	});
 });
 
-QUnit.test("beforsend", function (assert) {
+QUnit.test("beforeSend", function (assert) {
 	var done = assert.async();
 	var headers = {},
 	    restore = makeFixture(function () {
@@ -594,11 +594,15 @@ QUnit.test("beforsend", function (assert) {
 			id: "qux"
 		},
 		dataType: "json",
+		xhrFields: {
+			'CustomHeader': 'CustomValue'
+		},
 		beforeSend: function (xhr){
+			assert.ok(xhr.hasOwnProperty('CustomHeader'), "xhrField header set");
 			xhr.setRequestHeader("Authorization", "Bearer 123");
 		}
 	}).then(function (value) {
-		assert.ok(headers.hasOwnProperty('Authorization'), "custom header set");
+		assert.ok(headers.hasOwnProperty('Authorization'), "authorization header set");
 	}, function (reason) {
 		assert.notOk(reason, "request failed with reason = ", reason);
 	}).then(function () {

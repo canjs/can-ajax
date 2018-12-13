@@ -244,14 +244,14 @@ function ajax(o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
-	if(o.beforeSend){
-		o.beforeSend.call( o, xhr, o );
-	}
-
 	if (o.xhrFields) {
 		for (var f in o.xhrFields) {
 			xhr[f] = o.xhrFields[f];
 		}
+	}
+
+	if(o.beforeSend){
+		o.beforeSend.call( o, xhr, o );
 	}
 
 	xhr.send(data);
