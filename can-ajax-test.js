@@ -722,3 +722,32 @@ QUnit.test("beforeSend rejects the ajax promise on failure", function (assert) {
 		assert.equal(reason, error, "error is what we expect");
 	}).then(done);
 });
+
+QUnit.test("async should be always true #51", function(assert){
+	var done = assert.async();
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url, async) {
+				assert.ok(async);
+			};
+
+			this.send = function () {
+			    this.readyState = 4;
+			    this.status = 204;
+			    this.responseText = '';
+			    this.onreadystatechange();
+		    };
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+	});
+	
+	ajax({
+		type: "get",
+		url: "/ep"
+	}).then(function () {
+		restore();
+		done();
+	});
+});

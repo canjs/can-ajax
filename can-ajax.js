@@ -216,7 +216,7 @@ function ajax(o) {
 	if (!isPost && o.data) {
 		url += "?" + (isJsonContentType ? JSON.stringify(o.data) : param(o.data));
 	}
-	xhr.open(type, url);
+	xhr.open(type, url, true);
 
 	// For CORS to send a "simple" request (to avoid a preflight check), the following methods are allowed: GET/POST/HEAD,
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
