@@ -137,8 +137,10 @@ function ajax(o) {
 		deferred.reject = reject;
 	});
 	var requestUrl;
+	var isAborted = false;
 
 	promise.abort = function () {
+		isAborted = true;
 		xhr.abort();
 	};
 
@@ -250,11 +252,23 @@ function ajax(o) {
 		}
 	}
 
-	if(o.beforeSend){
-		o.beforeSend.call( o, xhr, o );
+	function send () {
+		if(!isAborted) {
+			xhr.send(data);
+		}
 	}
 
-	xhr.send(data);
+	if(o.beforeSend){
+		const result = o.beforeSend.call( o, xhr, o );
+		if(result && typeof result.then === 'function') {
+			result.then(send).catch(deferred.reject);
+		} else {
+			send();
+		}
+	} else {
+		send();
+	}
+	
 	return promise;
 }
 
