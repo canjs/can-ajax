@@ -137,8 +137,10 @@ function ajax(o) {
 		deferred.reject = reject;
 	});
 	var requestUrl;
+	var isAborted = false;
 
 	promise.abort = function () {
+		isAborted = true;
 		xhr.abort();
 	};
 
@@ -244,17 +246,27 @@ function ajax(o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
-	if(o.beforeSend){
-		o.beforeSend.call( o, xhr, o );
-	}
-
 	if (o.xhrFields) {
 		for (var f in o.xhrFields) {
 			xhr[f] = o.xhrFields[f];
 		}
 	}
 
-	xhr.send(data);
+	function send () {
+		if(!isAborted) {
+			xhr.send(data);
+		}
+	}
+
+	if(o.beforeSend){
+		const result = o.beforeSend.call( o, xhr, o );
+		if(canReflect.isPromise(result)) {
+			result.then(send).catch(deferred.reject);
+			return promise;
+		}
+	}
+	
+	send();
 	return promise;
 }
 

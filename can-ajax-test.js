@@ -285,20 +285,20 @@ if(typeof XDomainRequest === 'undefined') {
 	QUnit.test("cross domain post request should change data to form data (#90)", function (assert) {
 		var done = assert.async();
 		var headers = {},
-		    restore = makeFixture(function () {
-			    this.open = function (type, url) {};
+			restore = makeFixture(function () {
+				this.open = function (type, url) {};
 
-			    this.send = function () {
-				    this.readyState = 4;
-				    this.status = 204;
-				    this.responseText = '';
-				    this.onreadystatechange();
-			    };
+				this.send = function () {
+					this.readyState = 4;
+					this.status = 204;
+					this.responseText = '';
+					this.onreadystatechange();
+				};
 
-			    this.setRequestHeader = function (header, value) {
-				    headers[header] = value;
-			    };
-		    });
+				this.setRequestHeader = function (header, value) {
+					headers[header] = value;
+				};
+			});
 		ajax({
 			type: "POST",
 			url: "https://httpbin.org/post",
@@ -569,23 +569,71 @@ QUnit.test("It doesn't stringify FormData", function(assert) {
 	});
 });
 
-QUnit.test("beforsend", function (assert) {
+QUnit.test("abort", function (assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var aborted = false;
+		this.open = function (type, url) {};
+		this.setRequestHeader = function (header, value) {};
+		this.send = function () {};
+		this.abort = function() {
+			assert.ok(true, 'called the underlying XHR.abort');
+			done();
+		};
+	});
+
+	var request = ajax({
+		url: "/foo"
+	});
+
+	request.abort();
+});
+
+QUnit.test("abort prevents sending if beforeSend is not finished", function (assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var aborted = false;
+		this.open = function (type, url) {};
+		this.setRequestHeader = function (header, value) {};
+		this.abort = function() {
+			assert.ok(true, 'XHR abort was called');
+		};
+		this.send = function () {
+			assert.notOk(true, 'should not have been called');
+		};
+	});
+
+	var request = ajax({
+		url: "/foo",
+		beforeSend: function (xhr){
+			return new Promise(resolve => {
+				setTimeout(resolve, 1);
+			});
+		}
+	});
+
+	request.abort();
+
+	setTimeout(done, 10);
+});
+
+QUnit.test("beforeSend", function (assert) {
 	var done = assert.async();
 	var headers = {},
-	    restore = makeFixture(function () {
-		    this.open = function (type, url) {};
+		restore = makeFixture(function () {
+			this.open = function (type, url) {};
 
-		    this.send = function () {
-			    this.readyState = 4;
-			    this.status = 204;
-			    this.responseText = '';
-			    this.onreadystatechange();
-		    };
+			this.send = function () {
+				this.readyState = 4;
+				this.status = 204;
+				this.responseText = '';
+				this.onreadystatechange();
+			};
 
-		    this.setRequestHeader = function (header, value) {
-			    headers[header] = value;
-		    };
-	    });
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+		});
 
 	ajax({
 		type: "post",
@@ -594,11 +642,15 @@ QUnit.test("beforsend", function (assert) {
 			id: "qux"
 		},
 		dataType: "json",
+		xhrFields: {
+			'CustomHeader': 'CustomValue'
+		},
 		beforeSend: function (xhr){
+			assert.ok(xhr.hasOwnProperty('CustomHeader'), "xhrField header set");
 			xhr.setRequestHeader("Authorization", "Bearer 123");
 		}
 	}).then(function (value) {
-		assert.ok(headers.hasOwnProperty('Authorization'), "custom header set");
+		assert.ok(headers.hasOwnProperty('Authorization'), "authorization header set");
 	}, function (reason) {
 		assert.notOk(reason, "request failed with reason = ", reason);
 	}).then(function () {
@@ -606,4 +658,67 @@ QUnit.test("beforsend", function (assert) {
 		restore();
 		done();
 	});
+});
+
+QUnit.test("beforeSend async", function (assert) {
+	var done = assert.async();
+	var headers = {};
+	var restore = makeFixture(function () {
+		this.open = function (type, url) {};
+
+		this.send = function () {
+			this.readyState = 4;
+			this.status = 204;
+			this.responseText = '';
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			headers[header] = value;
+		};
+	});
+
+	ajax({
+		url: "/foo",
+		beforeSend: function (xhr){
+			return new Promise(resolve => {
+				setTimeout(() => {
+					xhr.setRequestHeader("Authorization", "Bearer 123");
+					resolve();
+				}, 1);
+			});
+		}
+	}).then(function (value) {
+		assert.ok(headers.hasOwnProperty('Authorization'), "authorization header set");
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	}).then(done);
+});
+
+QUnit.test("beforeSend rejects the ajax promise on failure", function (assert) {
+	var done = assert.async();
+	var error = new Error();
+	var restore = makeFixture(function () {
+		this.open = function (type, url) {};
+		this.send = function () {
+			assert.notOk(true, 'Should not be called');
+		};
+		this.setRequestHeader = function (header, value) {};
+	});
+
+	ajax({
+		url: "/foo",
+		beforeSend: function (xhr){
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					reject(error);
+				}, 1);
+			});
+		}
+	}).then(function (value) {
+		assert.notOk(true, "request should have rejected");
+	}, function (reason) {
+		assert.ok(true, "request rejected");
+		assert.equal(reason, error, "error is what we expect");
+	}).then(done);
 });
