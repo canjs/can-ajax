@@ -262,13 +262,11 @@ function ajax(o) {
 		const result = o.beforeSend.call( o, xhr, o );
 		if(canReflect.isPromise(result)) {
 			result.then(send).catch(deferred.reject);
-		} else {
-			send();
+			return promise;
 		}
-	} else {
-		send();
 	}
 	
+	send();
 	return promise;
 }
 
