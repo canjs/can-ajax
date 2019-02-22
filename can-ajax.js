@@ -10,6 +10,7 @@ var param = require("can-param");
  * @module {function} can-ajax can-ajax
  * @parent can-dom-utilities
  * @collection can-infrastructure
+ * @package ./package.json
  *
  * Make an asynchronous HTTP (AJAX) request.
  *
