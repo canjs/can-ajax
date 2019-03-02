@@ -5,8 +5,6 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-ajax/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/can-ajax.svg)](https://www.npmjs.com/package/can-ajax)
 [![Travis build status](https://travis-ci.org/canjs/can-ajax.svg?branch=master)](https://travis-ci.org/canjs/can-ajax)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/canjs/can-ajax?branch=master&svg=true)](https://ci.appveyor.com/project/matthewp/can-ajax)
-[![Coverage status](https://coveralls.io/repos/github/canjs/can-ajax/badge.svg?branch=master)](https://coveralls.io/github/canjs/can-ajax?branch=master)
 [![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-ajax.svg)](https://greenkeeper.io/)
 
 jQuery-inspired AJAX request library.
