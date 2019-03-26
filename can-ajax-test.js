@@ -578,6 +578,7 @@ QUnit.test("abort", function (assert) {
 		this.send = function () {};
 		this.abort = function() {
 			assert.ok(true, 'called the underlying XHR.abort');
+			restore();
 			done();
 		};
 	});
@@ -614,7 +615,10 @@ QUnit.test("abort prevents sending if beforeSend is not finished", function (ass
 
 	request.abort();
 
-	setTimeout(done, 10);
+	setTimeout(function() {
+		restore();
+		done();
+	}, 10);
 });
 
 QUnit.test("beforeSend", function (assert) {
@@ -692,7 +696,10 @@ QUnit.test("beforeSend async", function (assert) {
 		assert.ok(headers.hasOwnProperty('Authorization'), "authorization header set");
 	}, function (reason) {
 		assert.notOk(reason, "request failed with reason = ", reason);
-	}).then(done);
+	}).then(function() {
+		restore();
+		done();
+	});
 });
 
 QUnit.test("beforeSend rejects the ajax promise on failure", function (assert) {
@@ -720,7 +727,10 @@ QUnit.test("beforeSend rejects the ajax promise on failure", function (assert) {
 	}, function (reason) {
 		assert.ok(true, "request rejected");
 		assert.equal(reason, error, "error is what we expect");
-	}).then(done);
+	}).then(function() {
+		restore();
+		done();
+	});
 });
 
 QUnit.test("async should be always true #51", function(assert){
@@ -742,7 +752,7 @@ QUnit.test("async should be always true #51", function(assert){
 				headers[header] = value;
 			};
 	});
-	
+
 	ajax({
 		type: "get",
 		url: "/ep"
