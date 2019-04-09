@@ -140,6 +140,8 @@ function ajax(o) {
 		return canReflect.assignDeep(a,b);
 	});
 
+	var async = o.async !== false;
+
 	// Set the default contentType
 	if(!o.contentType) {
 		o.contentType = o.type.toUpperCase() === "GET" ?
@@ -202,7 +204,7 @@ function ajax(o) {
 	if (!isPost && o.data) {
 		url += "?" + (isJsonContentType ? JSON.stringify(o.data) : param(o.data));
 	}
-	xhr.open(type, url);
+	xhr.open(type, url, async);
 
 	// For CORS to send a "simple" request (to avoid a preflight check), the following methods are allowed: GET/POST/HEAD,
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
