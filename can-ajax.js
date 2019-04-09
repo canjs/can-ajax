@@ -8,8 +8,9 @@ var param = require("can-param");
 
 /**
  * @module {function} can-ajax can-ajax
- * @parent can-js-utilities
+ * @parent can-dom-utilities
  * @collection can-infrastructure
+ * @package ./package.json
  *
  * Make an asynchronous HTTP (AJAX) request.
  *
@@ -38,6 +39,7 @@ var param = require("can-param");
  *      - __dataType__ `{String}` Type of data. _Default is `json`_.
  *      - __crossDomain__ `{Boolean}` If you wish to force a crossDomain request (such as JSONP) on the same domain, set the value of crossDomain to true. This allows, for example, server-side redirection to another domain. Default: `false` for same-domain requests, `true` for cross-domain requests.
  *      - __xhrFields__ `{Object}` Any fields to be set directly on the xhr request, [https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest] such as the withCredentials attribute that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers.
+ *      - __beforeSend__ `{callback}` A pre-request callback function that can be used to modify the XHR object before it is sent. Use this to set custom headers, etc. The XHR and settings objects are passed as arguments.
  *
  *    @return {Promise} A Promise that resolves to the data. The Promise instance is abortable and exposes an `abort` method. Invoking abort on the Promise instance indirectly rejects it.
  *
@@ -101,32 +103,45 @@ var contentTypes = {
 };
 
 var _xhrResp = function (xhr, options) {
-	switch (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]) {
-		case "text/xml":
-		case "xml":
-			return xhr.responseXML;
-		case "text/json":
-		case "application/json":
-		case "text/javascript":
-		case "application/javascript":
-		case "application/x-javascript":
-		case "json":
-			return JSON.parse(xhr.responseText);
-		default:
-			return xhr.responseText;
+	try{
+		var type = (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]);
+		
+		if(type && (xhr.responseText || xhr.responseXML)){
+			
+			switch (type) {
+				case "text/xml":
+				case "xml":
+					return xhr.responseXML;
+				case "text/json":
+				case "application/json":
+				case "text/javascript":
+				case "application/javascript":
+				case "application/x-javascript":
+				case "json":
+					return xhr.responseText && JSON.parse(xhr.responseText);
+				default:
+					return xhr.responseText;
+			}
+		} else {
+			return xhr;
+		}
+	} catch(e){
+		return xhr;
 	}
 };
 
 function ajax(o) {
 	var xhr = makeXhr(), timer, n = 0;
-	var deferred = {};
+	var deferred = {}, isFormData;
 	var promise = new Promise(function(resolve,reject){
 		deferred.resolve = resolve;
 		deferred.reject = reject;
 	});
 	var requestUrl;
+	var isAborted = false;
 
 	promise.abort = function () {
+		isAborted = true;
 		xhr.abort();
 	};
 
@@ -188,7 +203,7 @@ function ajax(o) {
 				if (xhr.status >= 200 && xhr.status < 300) {
 					deferred.resolve( _xhrResp(xhr, o) );
 				} else {
-					deferred.reject( xhr );
+					deferred.reject( _xhrResp(xhr, o) );
 				}
 			}
 			else if (o.progress) {
@@ -210,13 +225,18 @@ function ajax(o) {
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
 
 	var isSimpleCors = o.crossDomain && ['GET', 'POST', 'HEAD'].indexOf(type) !== -1;
+	isFormData = typeof FormData !== "undefined" && o.data instanceof FormData;
 
 	if (isPost) {
-		data = (isJsonContentType && !isSimpleCors) ?
-			(typeof o.data === "object" ? JSON.stringify(o.data) : o.data):
-			param(o.data);
-
-		// CORS simple: `Content-Type` has to be `application/x-www-form-urlencoded`:
+		if (isFormData) {
+			// don't stringify FormData XHR handles it natively
+			data = o.data;
+		} else {
+			data = (isJsonContentType && !isSimpleCors) ?
+				(typeof o.data === "object" ? JSON.stringify(o.data) : o.data):
+				param(o.data);
+		}
+			// CORS simple: `Content-Type` has to be `application/x-www-form-urlencoded`:
 		var setContentType = (isJsonContentType && !isSimpleCors) ?
 			"application/json" : "application/x-www-form-urlencoded";
 		xhr.setRequestHeader("Content-Type", setContentType);
@@ -229,13 +249,27 @@ function ajax(o) {
 		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 	}
 
-        if (o.xhrFields) {
-            for (var f in o.xhrFields) {
-                xhr[f] = o.xhrFields[f];
-            }
-        }
+	if (o.xhrFields) {
+		for (var f in o.xhrFields) {
+			xhr[f] = o.xhrFields[f];
+		}
+	}
 
-	xhr.send(data);
+	function send () {
+		if(!isAborted) {
+			xhr.send(data);
+		}
+	}
+
+	if(o.beforeSend){
+		const result = o.beforeSend.call( o, xhr, o );
+		if(canReflect.isPromise(result)) {
+			result.then(send).catch(deferred.reject);
+			return promise;
+		}
+	}
+	
+	send();
 	return promise;
 }
 

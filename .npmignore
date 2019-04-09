@@ -1,1 +1,6 @@
 !dist/
+build.js
+.travis.yml
+.jshintrc
+.editorconfig
+/.idea/

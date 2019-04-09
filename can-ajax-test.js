@@ -299,21 +299,39 @@ QUnit.test("url encodes POST requests when contentType=application/x-www-form-ur
 });
 
 if(typeof XDomainRequest === 'undefined') {
-	if (!helpers.isServer()) {
-		// There are timing issues with mocha-qunit-ui
-		QUnit.test("cross domain post request should change data to form data (#90)", function (assert) {
-			var done = assert.async();
-			ajax({
-				type: "POST",
-				url: "http://httpbin.org/post",
-				data: {'message': 'VALUE'},
-				dataType: 'application/json'
-			}).then(function(resp){
-				assert.equal(resp.form.message, "VALUE");
-				done();
+
+	QUnit.test("cross domain post request should change data to form data (#90)", function (assert) {
+		var done = assert.async();
+		var headers = {},
+			restore = makeFixture(function () {
+				this.open = function (type, url) {};
+
+				this.send = function () {
+					this.readyState = 4;
+					this.status = 204;
+					this.responseText = '';
+					this.onreadystatechange();
+				};
+
+				this.setRequestHeader = function (header, value) {
+					headers[header] = value;
+				};
 			});
+		ajax({
+			type: "POST",
+			url: "https://httpbin.org/post",
+			data: {'message': 'VALUE'},
+			dataType: 'application/json'
+		}).then(function(resp){
+			QUnit.deepEqual(headers, {"Content-Type": "application/x-www-form-urlencoded"});
+
+			restore();
+			done();
 		});
-	}
+
+
+	});
+
 
 	// Test simple GET CORS:
 	QUnit.test("GET CORS should be a simple request - without a preflight (#187)", function (assert) {
@@ -432,6 +450,80 @@ QUnit.test("crossDomain is true for relative requests", function (assert) {
 	});
 });
 
+QUnit.test("handles 204 No Content responses when expecting JSON", function (assert) {
+	var done = assert.async();
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url) {};
+
+			this.send = function () {
+				this.readyState = 4;
+				this.status = 204;
+				this.responseText = '';
+				this.onreadystatechange();
+			};
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+		});
+
+	ajax({
+		type: "delete",
+		url: "/foo",
+		data: {
+			id: "qux"
+		},
+		dataType: "json"
+	}).then(function () {
+		assert.deepEqual(headers, {
+			"Content-Type": "application/json",
+			"X-Requested-With": "XMLHttpRequest"});
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	}).then(function () {
+		// restore original values
+		restore();
+		done();
+	});
+});
+
+QUnit.test("handles responseText containing text when expecting JSON (#46)", function (assert) {
+	var done = assert.async();
+	var NOT_FOUND_CODE = 404;
+	var NOT_FOUND_MSG = "NOT FOUND";
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url) {};
+
+			this.send = function () {
+				this.readyState = 4;
+				this.status = NOT_FOUND_CODE;
+				this.responseText = NOT_FOUND_MSG;
+				this.onreadystatechange();
+			};
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+		});
+
+	ajax({
+		type: "get",
+		url: "/foo",
+		dataType: "json"
+	}).then(function (value) {
+		assert.notOk(value, "success callback call not expected");
+	}, function (xhr) {
+		assert.equal(xhr.status, 404);
+		assert.equal(xhr.responseText, NOT_FOUND_MSG);
+	}).then(function () {
+		// restore original values
+		restore();
+		done();
+	});
+});
+
 if (hasLocalServer) {
 	QUnit.test("correctly serializes null and undefined values (#177)", function (assert) {
 		var done = assert.async();
@@ -447,3 +539,243 @@ if (hasLocalServer) {
 		});
 	});
 }
+
+
+QUnit.test("It doesn't stringify FormData", function(assert) {
+	var done = assert.async();
+	var headers = {};
+	var formData = new FormData();
+	formData.append('foo', 'bar');
+
+	var restore = makeFixture(function () {
+		var o = {};
+		this.open = function (type, url) {
+			o.url = url;
+		};
+
+		this.send = function (data) {
+			o.data = data;
+			this.readyState = 4;
+			this.status = 200;
+			this.responseText = JSON.stringify(o);
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			if (header === "Content-Type") {
+				o[header] = value;
+			}
+		};
+	});
+
+	var origin = parseURI(GLOBAL().location.href);
+	var url = origin.protocol + origin.authority + "/foo";
+
+	ajax({
+		type: "post",
+		url: url,
+		data: formData
+	}).then(function(value){
+		assert.equal(value["Content-Type"], "application/json");
+		assert.equal(value.url, url);
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	})
+	.then(function(){
+		restore();
+		done();
+	});
+});
+
+QUnit.test("abort", function (assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var aborted = false;
+		this.open = function (type, url) {};
+		this.setRequestHeader = function (header, value) {};
+		this.send = function () {};
+		this.abort = function() {
+			assert.ok(true, 'called the underlying XHR.abort');
+			restore();
+			done();
+		};
+	});
+
+	var request = ajax({
+		url: "/foo"
+	});
+
+	request.abort();
+});
+
+QUnit.test("abort prevents sending if beforeSend is not finished", function (assert) {
+	var done = assert.async();
+	var restore = makeFixture(function () {
+		var aborted = false;
+		this.open = function (type, url) {};
+		this.setRequestHeader = function (header, value) {};
+		this.abort = function() {
+			assert.ok(true, 'XHR abort was called');
+		};
+		this.send = function () {
+			assert.notOk(true, 'should not have been called');
+		};
+	});
+
+	var request = ajax({
+		url: "/foo",
+		beforeSend: function (xhr){
+			return new Promise(resolve => {
+				setTimeout(resolve, 1);
+			});
+		}
+	});
+
+	request.abort();
+
+	setTimeout(function() {
+		restore();
+		done();
+	}, 10);
+});
+
+QUnit.test("beforeSend", function (assert) {
+	var done = assert.async();
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url) {};
+
+			this.send = function () {
+				this.readyState = 4;
+				this.status = 204;
+				this.responseText = '';
+				this.onreadystatechange();
+			};
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+		});
+
+	ajax({
+		type: "post",
+		url: "/foo",
+		data: {
+			id: "qux"
+		},
+		dataType: "json",
+		xhrFields: {
+			'CustomHeader': 'CustomValue'
+		},
+		beforeSend: function (xhr){
+			assert.ok(xhr.hasOwnProperty('CustomHeader'), "xhrField header set");
+			xhr.setRequestHeader("Authorization", "Bearer 123");
+		}
+	}).then(function (value) {
+		assert.ok(headers.hasOwnProperty('Authorization'), "authorization header set");
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	}).then(function () {
+		// restore original values
+		restore();
+		done();
+	});
+});
+
+QUnit.test("beforeSend async", function (assert) {
+	var done = assert.async();
+	var headers = {};
+	var restore = makeFixture(function () {
+		this.open = function (type, url) {};
+
+		this.send = function () {
+			this.readyState = 4;
+			this.status = 204;
+			this.responseText = '';
+			this.onreadystatechange();
+		};
+
+		this.setRequestHeader = function (header, value) {
+			headers[header] = value;
+		};
+	});
+
+	ajax({
+		url: "/foo",
+		beforeSend: function (xhr){
+			return new Promise(resolve => {
+				setTimeout(() => {
+					xhr.setRequestHeader("Authorization", "Bearer 123");
+					resolve();
+				}, 1);
+			});
+		}
+	}).then(function (value) {
+		assert.ok(headers.hasOwnProperty('Authorization'), "authorization header set");
+	}, function (reason) {
+		assert.notOk(reason, "request failed with reason = ", reason);
+	}).then(function() {
+		restore();
+		done();
+	});
+});
+
+QUnit.test("beforeSend rejects the ajax promise on failure", function (assert) {
+	var done = assert.async();
+	var error = new Error();
+	var restore = makeFixture(function () {
+		this.open = function (type, url) {};
+		this.send = function () {
+			assert.notOk(true, 'Should not be called');
+		};
+		this.setRequestHeader = function (header, value) {};
+	});
+
+	ajax({
+		url: "/foo",
+		beforeSend: function (xhr){
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					reject(error);
+				}, 1);
+			});
+		}
+	}).then(function (value) {
+		assert.notOk(true, "request should have rejected");
+	}, function (reason) {
+		assert.ok(true, "request rejected");
+		assert.equal(reason, error, "error is what we expect");
+	}).then(function() {
+		restore();
+		done();
+	});
+});
+
+QUnit.test("async should be always true #51", function(assert){
+	var done = assert.async();
+	var headers = {},
+		restore = makeFixture(function () {
+			this.open = function (type, url, async) {
+				assert.ok(async);
+			};
+
+			this.send = function () {
+			    this.readyState = 4;
+			    this.status = 204;
+			    this.responseText = '';
+			    this.onreadystatechange();
+		    };
+
+			this.setRequestHeader = function (header, value) {
+				headers[header] = value;
+			};
+	});
+
+	ajax({
+		type: "get",
+		url: "/ep"
+	}).then(function () {
+		restore();
+		done();
+	});
+});
