@@ -50,6 +50,24 @@ if (hasLocalServer) {
 			done();
 		});
 	});
+
+	QUnit.test("synchronous get request", function(assert) {
+		var done = assert.async();
+		var ok = true;
+		ajax({
+			type: "get",
+			url: __dirname+"/can-ajax-test-result.json",
+			async: false,
+			success: function(){
+				assert.ok(ok, "Callback happens before returning.");
+			}
+		}).then(function(){
+			assert.ok(!ok, "Promise resolves after returning");
+			done();
+		});
+
+		ok = false;
+	});
 }
 
 QUnit.test("added to namespace (#99)", function (assert) {
