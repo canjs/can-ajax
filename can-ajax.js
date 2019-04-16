@@ -16,10 +16,10 @@ var param = require("can-param");
  *
  * @signature `ajax( ajaxOptions )`
  *
- *    Is used to make an asynchronous HTTP (AJAX) request similar to [http://api.jquery.com/jQuery.ajax/jQuery.ajax].
+ *    Is used to make an asynchronous HTTP (AJAX) request similar to [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/).
  *
- *    ```
- *    var ajax = require("can-ajax");
+ *    ```js
+ *    import { ajax } from "can";
  *
  *    ajax({
  *      url: "http://query.yahooapis.com/v1/public/yql",
@@ -52,8 +52,8 @@ var param = require("can-param");
  *    Is used to persist ajaxOptions across all ajax requests and they can be over-written in the ajaxOptions of the actual request.
  *    [https://api.jquery.com/jquery.ajaxsetup/]
  *
- *    ```
- *    var ajax = require("can-ajax");
+ *    ```js
+ *    import { ajax } from "can";
  *
  *    ajax.ajaxSetup({xhrFields: {withCredentials: true}});
  *
