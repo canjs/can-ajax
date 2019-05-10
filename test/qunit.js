@@ -18,7 +18,7 @@ if (isMochaQUnitUI) {
 	QUnit.test = test;
 	module.exports =  QUnit;
 } else if (isQunit) {
-	module.exports = require('qunitjs');
+	module.exports = require('qunit');
 } else {
 	module.exports = require('steal-qunit');
 }
