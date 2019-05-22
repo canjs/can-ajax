@@ -1,4 +1,3 @@
-'use strict';
 
 var ajax = require('./can-ajax');
 var namespace = require("can-namespace");
@@ -625,7 +624,7 @@ QUnit.test("abort prevents sending if beforeSend is not finished", function (ass
 	var request = ajax({
 		url: "/foo",
 		beforeSend: function (xhr){
-			return new Promise(resolve => {
+			return new Promise(function(resolve) {
 				setTimeout(resolve, 1);
 			});
 		}
@@ -703,8 +702,8 @@ QUnit.test("beforeSend async", function (assert) {
 	ajax({
 		url: "/foo",
 		beforeSend: function (xhr){
-			return new Promise(resolve => {
-				setTimeout(() => {
+		    return new Promise(function(resolve) {
+				setTimeout(function() {
 					xhr.setRequestHeader("Authorization", "Bearer 123");
 					resolve();
 				}, 1);
@@ -734,8 +733,8 @@ QUnit.test("beforeSend rejects the ajax promise on failure", function (assert) {
 	ajax({
 		url: "/foo",
 		beforeSend: function (xhr){
-			return new Promise((resolve, reject) => {
-				setTimeout(() => {
+			return new Promise(function(resolve, reject) {
+				setTimeout(function() {
 					reject(error);
 				}, 1);
 			});
