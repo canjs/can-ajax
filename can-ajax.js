@@ -265,7 +265,7 @@ function ajax(o) {
 	}
 
 	if(o.beforeSend){
-		const result = o.beforeSend.call( o, xhr, o );
+		var result = o.beforeSend.call( o, xhr, o );
 		if(canReflect.isPromise(result)) {
 			result.then(send).catch(deferred.reject);
 			return promise;
