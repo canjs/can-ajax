@@ -542,7 +542,7 @@ if (hasLocalServer) {
 
 QUnit.test("It doesn't stringify FormData", function(assert) {
 	var done = assert.async();
-	var headers = {};
+
 	var formData = new FormData();
 	formData.append('foo', 'bar');
 
@@ -575,8 +575,12 @@ QUnit.test("It doesn't stringify FormData", function(assert) {
 		url: url,
 		data: formData
 	}).then(function(value){
-		assert.equal(value["Content-Type"], "application/json");
 		assert.equal(value.url, url);
+		assert.equal(
+			typeof value["Content-Type"],
+			"undefined",
+			"Content-Type should not be set"
+		);
 	}, function (reason) {
 		assert.notOk(reason, "request failed with reason = ", reason);
 	})

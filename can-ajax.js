@@ -232,17 +232,19 @@ function ajax(o) {
 
 	if (isPost) {
 		if (isFormData) {
-			// don't stringify FormData XHR handles it natively
+			// do not set "Content-Type" let the browser handle it
+			// do not stringify FormData XHR handles it natively
 			data = o.data;
 		} else {
-			data = (isJsonContentType && !isSimpleCors) ?
-				(typeof o.data === "object" ? JSON.stringify(o.data) : o.data):
-				param(o.data);
+			if (isJsonContentType && !isSimpleCors) {
+				data = typeof o.data === "object" ? JSON.stringify(o.data) : o.data;
+				xhr.setRequestHeader("Content-Type", "application/json");
+			} else {
+				data = param(o.data);
+				// CORS simple: `Content-Type` has to be `application/x-www-form-urlencoded`:
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			}
 		}
-			// CORS simple: `Content-Type` has to be `application/x-www-form-urlencoded`:
-		var setContentType = (isJsonContentType && !isSimpleCors) ?
-			"application/json" : "application/x-www-form-urlencoded";
-		xhr.setRequestHeader("Content-Type", setContentType);
 	} else {
 		xhr.setRequestHeader("Content-Type", o.contentType);
 	}
