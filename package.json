@@ -51,7 +51,7 @@
     "can-reflect": "^1.16.3"
   },
   "devDependencies": {
-    "can-make-map": "^1.0.0",
+    "can-make-map": "^1.2.2",
     "detect-cyclic-packages": "^1.1.0",
     "http-server": "^0.11.1",
     "jshint": "^2.9.1",
