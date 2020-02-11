@@ -57,7 +57,7 @@
     "jshint": "^2.9.1",
     "steal": "^1.11.8",
     "steal-qunit": "^2.0.0",
-    "steal-tools": "^1.11.9",
+    "steal-tools": "^2.2.6",
     "test-saucelabs": "0.0.6",
     "testee": "^0.9.0"
   }
