@@ -53,7 +53,7 @@
   "devDependencies": {
     "can-make-map": "^1.0.0",
     "detect-cyclic-packages": "^1.1.0",
-    "http-server": "^0.11.1",
+    "http-server": "^0.12.3",
     "jshint": "^2.9.1",
     "steal": "^1.11.8",
     "steal-qunit": "^2.0.0",
