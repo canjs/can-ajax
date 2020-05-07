@@ -28,7 +28,7 @@
     "build": "node build.js",
     "detect-cycle": "detect-cyclic-packages"
   },
-  "main": "dist/cjs/can-ajax",
+  "main": "can-ajax",
   "keywords": [
     "canjs",
     "ajax",
