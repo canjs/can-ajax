@@ -5,9 +5,10 @@ var namespace = require("can-namespace");
 var makeMap = require('can-make-map');
 var GLOBAL = require("can-globals/global/global");
 var parseURI = require('can-parse-uri');
-
 var QUnit = require('./test/qunit');
 var helpers = require('./test/helpers');
+var clone = require('steal-clone');
+var testHelpers = require('can-test-helpers');
 var isMainCanTest = typeof System === 'object' && System.env !== 'canjs-test';
 var hasLocalServer = !helpers.isServer() && !helpers.isProduction();
 
@@ -531,4 +532,23 @@ QUnit.test("It doesn't stringify FormData", function(assert) {
 		restore();
 		done();
 	});
+});
+
+testHelpers.dev.devOnlyTest('Delay reading globals location until is needed', function(assert) {
+	var done = assert.async();
+
+	var loader = clone({
+		'can-globals/global/global': {
+			default: function() {
+				return {};
+			}
+		}
+	});
+
+	loader.import("can-ajax")
+		.then(function(ajax) {
+			assert.ok(ajax);
+			done();
+		});
+
 });

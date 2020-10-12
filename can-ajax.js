@@ -76,7 +76,7 @@ var xhrs = [
 	],
 	_xhrf = null;
 // used to check for Cross Domain requests
-var originUrl = parseURI(Global().location.href);
+var originUrl;
 
 var globalSettings = {};
 
@@ -121,6 +121,9 @@ var _xhrResp = function (xhr, options) {
 };
 
 function ajax(o) {
+	if (!originUrl) {
+		originUrl = parseURI(Global().location.href);
+	}
 	var xhr = makeXhr(), timer, n = 0;
 	var deferred = {}, isFormData;
 	var promise = new Promise(function(resolve,reject){
