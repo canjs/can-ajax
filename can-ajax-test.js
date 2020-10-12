@@ -534,7 +534,7 @@ QUnit.test("It doesn't stringify FormData", function(assert) {
 	});
 });
 
-testHelpers.dev.devOnlyTest('Delay reading globals location until is needed', function(assert) {
+testHelpers.dev.devOnlyTest('Should not error when loading if globals.location is undefined', function(assert) {
 	var done = assert.async();
 
 	var loader = clone({
