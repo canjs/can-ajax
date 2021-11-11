@@ -50,6 +50,56 @@ if (hasLocalServer) {
 		});
 	});
 
+	QUnit.test("Body payload should append to the url query string when PATCH method is used (#75)", function (assert) {
+		var done = assert.async();
+		var restore = makeFixture(function () {
+			var o = {};
+			this.open = function (type, url) {
+				o.url = url;
+			};
+	
+			this.send = function (data) {
+				o.data = data;
+				this.readyState = 4;
+				this.status = 200;
+				this.responseText = JSON.stringify(o);
+				this.onreadystatechange();
+			};
+	
+			this.setRequestHeader = function (header, value) {
+				if (header === "Content-Type") {
+					o[header] = value;
+				}
+			};
+		});
+	
+		var origin = parseURI(GLOBAL().location.href);
+		var url = origin.protocol + origin.authority + "/food";
+
+
+		ajax({
+			url: url,
+			type: "post",
+			data: JSON.stringify({ food: "bar"}),
+		}).then(function(resp){
+			console.log("resp in post", resp);
+			assert.equal(resp.data, `{"food":"bar"}`);
+	
+		});
+
+		ajax({
+			url: url,
+			type: "patch",
+			data: {food: "baz"},
+		}).then(function(resp){
+			assert.deepEqual(resp.data, `{"food":"baz"}`);
+		}).then(function() {
+			restore();
+			done();
+		});
+
+	});
+	
 	QUnit.test("synchronous get request", function(assert) {
 		var done = assert.async();
 		var ok = true;
@@ -327,8 +377,6 @@ if(typeof XDomainRequest === 'undefined') {
 			restore();
 			done();
 		});
-
-
 	});
 
 
@@ -773,7 +821,7 @@ QUnit.test("async should be always true #51", function(assert){
 				headers[header] = value;
 			};
 	});
-
+	
 	ajax({
 		type: "get",
 		url: "/ep"
