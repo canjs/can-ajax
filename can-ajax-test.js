@@ -50,7 +50,7 @@ if (hasLocalServer) {
 		});
 	});
 
-	QUnit.test("Body payload should append to the url query string when PATCH method is used (#75)", function (assert) {
+	QUnit.test("The variable isPost will check for PATCH types in ajax requests (#75)", function (assert) {
 		var done = assert.async();
 		var restore = makeFixture(function () {
 			var o = {};
