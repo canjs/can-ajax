@@ -106,6 +106,7 @@ var contentTypes = {
 };
 
 var _xhrResp = function (xhr, options) {
+
 	try{
 		var type = (options.dataType || xhr.getResponseHeader("Content-Type").split(";")[0]);
 		
@@ -165,7 +166,6 @@ function ajax(o) {
 		o.contentType = o.type.toUpperCase() === "GET" ?
 			contentTypes.form : contentTypes.json;
 	}
-
 	//how jquery handles check for cross domain
 	if(o.crossDomain == null){
 		try {
@@ -186,6 +186,7 @@ function ajax(o) {
 		}, o.timeout);
 	}
 	xhr.onreadystatechange = function () {
+	
 		try {
 			if (xhr.readyState === 4) {
 				if (timer) {
@@ -218,12 +219,11 @@ function ajax(o) {
 	};
 	var url = o.url, data = null, type = o.type.toUpperCase();
 	var isJsonContentType = o.contentType === contentTypes.json;
-	var isPost = type === "POST" || type === "PUT";
+	var isPost = type === "POST" || type === "PUT" || type === "PATCH";
 	if (!isPost && o.data) {
 		url += "?" + (isJsonContentType ? JSON.stringify(o.data) : param(o.data));
 	}
 	xhr.open(type, url, async);
-
 	// For CORS to send a "simple" request (to avoid a preflight check), the following methods are allowed: GET/POST/HEAD,
 	// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Simple_requests
 
@@ -259,7 +259,6 @@ function ajax(o) {
 			xhr[f] = o.xhrFields[f];
 		}
 	}
-
 	function send () {
 		if(!isAborted) {
 			xhr.send(data);
