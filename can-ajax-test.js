@@ -83,7 +83,7 @@ if (hasLocalServer) {
 			data: JSON.stringify({ food: "bar"}),
 		}).then(function(resp){
 			console.log("resp in post", resp);
-			assert.equal(resp.data, `{"food":"bar"}`);
+			assert.equal(resp.data, '{"food":"bar"}');
 	
 		});
 
@@ -92,7 +92,7 @@ if (hasLocalServer) {
 			type: "patch",
 			data: {food: "baz"},
 		}).then(function(resp){
-			assert.deepEqual(resp.data, `{"food":"baz"}`);
+			assert.deepEqual(resp.data, '{"food":"baz"}');
 		}).then(function() {
 			restore();
 			done();
